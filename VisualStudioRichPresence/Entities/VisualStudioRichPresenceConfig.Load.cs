@@ -48,7 +48,7 @@ namespace VisualStudioRichPresence.Entities
 					ShowTimestamp = true,
 					ShowFileName = true,
 					ShowProjectName = true,
-					ToggleTimestampReset = false,
+					AutoResetTimestamp = false,
 
 					DefaultFile = new VisualStudioRichPresenceExtension("", "", "default_file"),
 					DefaultFolder = new VisualStudioRichPresenceExtension("", "", "default_folder"),
@@ -153,6 +153,12 @@ namespace VisualStudioRichPresence.Entities
 						new VisualStudioRichPresenceExtension("eyml", "", "file_type_yaml", "", ""),
 						new VisualStudioRichPresenceExtension("yaml", "", "file_type_yaml", "", ""),
 						new VisualStudioRichPresenceExtension("yml", "", "file_type_yaml", "", "")
+					},
+
+					Strings = new List<VisualStudioRichPresenceString>
+					{
+						new VisualStudioRichPresenceString("VS_WORKING_ON_PROJECT", "Working On"),
+						new VisualStudioRichPresenceString("VS_EDITING_FILE", "Editing")
 					}
 				};
 

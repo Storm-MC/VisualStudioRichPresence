@@ -8,6 +8,12 @@ namespace VisualStudioRichPresence.Entities
 	[XmlRoot]
 	public partial class VisualStudioRichPresenceConfig
 	{
+		public VisualStudioRichPresenceConfig()
+		{
+			Extensions = new List<VisualStudioRichPresenceExtension>();
+			Strings = new List<VisualStudioRichPresenceString>();
+		}
+
 		[XmlElement]
 		public string ApplicationId { get; set; }
 
@@ -15,7 +21,7 @@ namespace VisualStudioRichPresence.Entities
 		public bool ShowTimestamp { get; set; }
 
 		[XmlElement]
-		public bool ToggleTimestampReset { get; set; }
+		public bool AutoResetTimestamp { get; set; }
 
 		[XmlElement]
 		public bool ShowFileName { get; set; }
@@ -32,5 +38,19 @@ namespace VisualStudioRichPresence.Entities
 		[XmlArray ("Extensions")]
 		[XmlArrayItem ("Extension")]
 		public List<VisualStudioRichPresenceExtension> Extensions { get; set; }
+
+		[XmlArray("Strings")]
+		[XmlArrayItem("String")]
+		public List<VisualStudioRichPresenceString> Strings { get; set; }
+
+		public (bool exists, string text) GetString(string key)
+		{
+			var m = Strings.Find(f => f.Key == key);
+			if(m != null)
+			{
+				return (true, m.Value);
+			}
+			return (false, "");
+		}
 	}
 }

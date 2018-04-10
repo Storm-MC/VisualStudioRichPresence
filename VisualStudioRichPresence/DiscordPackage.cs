@@ -21,6 +21,8 @@ namespace VisualStudioRichPresence
 		DTE dte;
 		Events events;
 
+		long timestamp;
+		
 		RichPresence rp;
 		EventHandlers eh;
 
@@ -65,18 +67,19 @@ namespace VisualStudioRichPresence
 			dte = (DTE)GetService(typeof(SDTE));
 			events = dte.Events;
 
+			timestamp = DiscordRpc.GetTimestamp();
+
+			rp.startTimestamp = null;
+			rp.endTimestamp = null;
 
 			rp.largeImageKey = "visualstudio";
 			rp.largeImageText = "Visual Studio";
-			rp.startTimestamp = DiscordRpc.GetTimestamp(DateTime.UtcNow);
-
-			rp.state = "No File";
-			rp.details = "No Project";
 
 			DiscordRpc.UpdatePresence(rp);
 			DiscordRpc.RunCallbacks();
 
 			events.SolutionEvents.Opened += SolutionEvents_Opened;
+			events.SolutionEvents.AfterClosing += SolutionEvents_Closed;
 			events.WindowEvents.WindowActivated += WindowEvents_WindowActivated;
 
 			base.Initialize();
@@ -85,21 +88,17 @@ namespace VisualStudioRichPresence
 
 		void CheckTimestamp()
 		{
-			Log.Debug("CheckTimestamp(): Show Timestamp? " + (Config.Instance.ShowTimestamp ? "Yes" : "No"));
 			if (Config.Instance.ShowTimestamp)
 			{
-				Log.Debug("CheckTimestamp(): Toggle Timestamp Reset? " + (Config.Instance.ToggleTimestampReset ? "Yes" : "No"));
-
-				if (Config.Instance.ToggleTimestampReset)
-				{
-					var ts = DiscordRpc.GetTimestamp(DateTime.UtcNow);
-					Log.Debug("CheckTimestamp(): Old Timestamp: " + rp.startTimestamp + ", New Timestamp: " + ts);
-					rp.startTimestamp = ts;
-				}
+				if (Config.Instance.AutoResetTimestamp)
+					rp.startTimestamp = DiscordRpc.GetTimestamp();
+				else
+					rp.startTimestamp = timestamp;
 			}
 			else
 			{
 				rp.startTimestamp = null;
+				rp.endTimestamp = null;
 			}
 		}
 
@@ -109,7 +108,9 @@ namespace VisualStudioRichPresence
 
 			if (Config.Instance.ShowProjectName)
 			{
-				rp.details = string.Format("Working On {0}", Path.GetFileNameWithoutExtension(dte.Solution.FileName));
+				var name = Path.GetFileNameWithoutExtension(dte.Solution.FileName);
+				var str = Config.Instance.GetString("VS_WORKING_ON_PROJECT");
+				rp.state = str.exists ? str.text + name : name;
 			}
 			else
 			{
@@ -124,8 +125,16 @@ namespace VisualStudioRichPresence
 		{
 			CheckTimestamp();
 
-			rp.state = "No File";
-			rp.details = "No Project";
+			rp.state = null;
+			rp.details = null;
+			rp.largeImageKey = "visualstudio";
+			rp.largeImageText = "Visual Studio";
+
+			rp.smallImageKey = null;
+			rp.smallImageText = null;
+
+			rp.startTimestamp = null;
+			rp.endTimestamp = null;
 
 			DiscordRpc.UpdatePresence(rp);
 			DiscordRpc.RunCallbacks();
@@ -135,17 +144,46 @@ namespace VisualStudioRichPresence
 		{
 			CheckTimestamp();
 
-			if (GotFocus != null && GotFocus.Document != null && File.Exists(GotFocus.Document.Path))
+			if (Config.Instance.ShowProjectName && dte.Solution != null && File.Exists(dte.Solution.FullName))
 			{
-
+				var name = Path.GetFileNameWithoutExtension(new FileInfo(dte.Solution.FullName).FullName);
+				var str = Config.Instance.GetString("VS_WORKING_ON_PROJECT");
+				rp.state = str.exists ? str.text + name : name;
 			}
-		}
 
-		protected override int QueryClose(out bool canClose)
-		{
-			Log.Info("Shutdown.");
-			DiscordRpc.Shutdown();
-			return base.QueryClose(out canClose);
+			if (GotFocus != null && GotFocus.Document != null && File.Exists(GotFocus.Document.FullName))
+			{
+				rp.largeImageKey = null;
+				rp.largeImageText = null;
+				rp.smallImageKey = null;
+				rp.smallImageText = null;
+				
+				var filename = new FileInfo(GotFocus.Document.FullName).FullName;
+				var extension = Path.GetExtension(filename).Substring(1);
+
+				var name = Path.GetFileName(filename);
+				var str = Config.Instance.GetString("VS_EDITING_FILE");
+				rp.details = str.exists ? str.text + name : name;
+
+				var ext = Config.Instance.Extensions.Find(e => e.Extension == extension);
+				if(ext != null)
+				{
+					if (ext.HasLargeImageKey)
+						rp.largeImageKey = ext.LargeImageKey;
+
+					if (ext.HasLargeImageText)
+						rp.largeImageText = ext.LargeImageText;
+
+					if (ext.HasSmallImageKey)
+						rp.smallImageKey = ext.SmallImageKey;
+
+					if (ext.HasSmallImageText)
+						rp.smallImageText = ext.SmallImageText;
+				}
+			}
+
+			DiscordRpc.UpdatePresence(rp);
+			DiscordRpc.RunCallbacks();
 		}
 	}
 }

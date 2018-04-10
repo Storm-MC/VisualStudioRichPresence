@@ -73,6 +73,8 @@ namespace VisualStudioRichPresence.Entities
 
 	public class DiscordRpc
 	{
+		public static long GetTimestamp() => GetTimestamp(DateTime.UtcNow);
+
 		public static long GetTimestamp(DateTime dt) {
 			return (long)dt.Subtract (new DateTime (1970, 1, 1)).TotalSeconds;
 		}
