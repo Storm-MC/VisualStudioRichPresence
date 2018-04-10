@@ -7,7 +7,6 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using VisualStudioRichPresence.Entities;
-using VisualStudioRichPresence.Extensions;
 using Config = VisualStudioRichPresence.Entities.VisualStudioRichPresenceConfig;
 
 namespace VisualStudioRichPresence
