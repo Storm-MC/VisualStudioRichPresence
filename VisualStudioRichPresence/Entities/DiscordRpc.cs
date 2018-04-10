@@ -74,7 +74,7 @@ namespace VisualStudioRichPresence.Entities
 	public class DiscordRpc
 	{
 		public static long GetTimestamp(DateTime dt) {
-			return (long)dt.Subtract (new DateTime (1970, 1, 1)).TotalMilliseconds;
+			return (long)dt.Subtract (new DateTime (1970, 1, 1)).TotalSeconds;
 		}
 
 		[DllImport ("discord-rpc", EntryPoint = "Discord_Initialize", CallingConvention = CallingConvention.Cdecl)]
@@ -112,8 +112,8 @@ namespace VisualStudioRichPresence.Entities
 
 		public string state; /* max 128 bytes */
 		public string details; /* max 128 bytes */
-		public long startTimestamp;
-		public long endTimestamp;
+		public long? startTimestamp;
+		public long? endTimestamp;
 		public string largeImageKey; /* max 32 bytes */
 		public string largeImageText; /* max 128 bytes */
 		public string smallImageKey; /* max 32 bytes */
@@ -137,8 +137,13 @@ namespace VisualStudioRichPresence.Entities
 
 			_presence.state = StrToPtr (state, 128);
 			_presence.details = StrToPtr (details, 128);
-			_presence.startTimestamp = startTimestamp;
-			_presence.endTimestamp = endTimestamp;
+
+			if (startTimestamp.HasValue)
+				_presence.startTimestamp = startTimestamp.Value;
+
+			if (endTimestamp.HasValue)
+				_presence.endTimestamp = endTimestamp.Value;
+			
 			_presence.largeImageKey = StrToPtr (largeImageKey, 32);
 			_presence.largeImageText = StrToPtr (largeImageText, 128);
 			_presence.smallImageKey = StrToPtr (smallImageKey, 32);

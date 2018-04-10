@@ -19,7 +19,7 @@ namespace VisualStudioRichPresence.Entities
 
 		[XmlElement]
 		public bool ShowFileName { get; set; }
-
+		
 		[XmlElement]
 		public bool ShowProjectName { get; set; }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.InteropServices;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
@@ -11,13 +12,11 @@ using Config = VisualStudioRichPresence.Entities.VisualStudioRichPresenceConfig;
 
 namespace VisualStudioRichPresence
 {
-	[ProvideAutoLoad (UIContextGuids80.SolutionExists, flags: PackageAutoLoadFlags.BackgroundLoad | PackageAutoLoadFlags.SkipWhenUIContextRulesActive)]
-	[ProvideAutoLoad (UIContextGuids80.EmptySolution, flags: PackageAutoLoadFlags.BackgroundLoad | PackageAutoLoadFlags.SkipWhenUIContextRulesActive)]
-
-	[PackageRegistration (UseManagedResourcesOnly = true)]
-	[InstalledProductRegistration ("#110", "#112", "1.0", IconResourceID = 400)]
-	[Guid ("3aa63f34-c1f0-42ea-95d1-5d2f07c3c7ec")]
-	[SuppressMessage ("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
+	[ProvideAutoLoad(UIContextGuids80.NoSolution)]
+	[PackageRegistration(UseManagedResourcesOnly = true)]
+	[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
+	[Guid("3aa63f34-c1f0-42ea-95d1-5d2f07c3c7ec")]
+	[SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
 	public sealed partial class DiscordPackage : Package
 	{
 		DTE dte;
@@ -25,83 +24,129 @@ namespace VisualStudioRichPresence
 
 		RichPresence rp;
 		EventHandlers eh;
-		bool ready = false;
 
-		public DiscordPackage() {
-			Config.Load ();
+		public static DiscordPackage Instance { get; private set; }
 
-			rp = new RichPresence ();
-			eh = new EventHandlers () {
-				readyCallback = () => {
-					Trace.TraceInformation ("[DiscordRpc]: Ready");
-					ready = true;
+		public DiscordPackage()
+		{
+			Instance = this;
+
+			Log.Configure();
+			Config.Load();
+
+			rp = new RichPresence();
+			eh = new EventHandlers()
+			{
+				readyCallback = () =>
+				{
+					Log.Debug("Ready");
 				},
 
-				disconnectedCallback = (int c, string s) => {
-					Trace.TraceWarning ("[DiscordRpc]: Disconnected. [{0}]: {1}", c, s);
-					ready = false;
+				disconnectedCallback = (int c, string s) =>
+				{
+					Log.Warn("Disconnected: [{0}]: {1}", c, s);
 				},
 
-				errorCallback = (int c, string s) => {
-					Trace.TraceError ("[DiscordRpc]: Error. [{0}]: {1}", c, s);
-					ready = false;
+				errorCallback = (int c, string s) =>
+				{
+					Log.Error("Errored: [{0}]: {1}", c, s);
 				}
 			};
 		}
 
-		protected override void Initialize() {
-			DiscordRpc.Initialize (
+		protected override void Initialize()
+		{
+			DiscordRpc.Initialize(
 				Config.Instance.ApplicationId,
 				ref eh,
 				true,
 				null
 			);
 
-			dte = (DTE)GetService (typeof (SDTE));
+			dte = (DTE)GetService(typeof(SDTE));
 			events = dte.Events;
 
-			events.DTEEvents.OnStartupComplete += () => {
-				rp.smallImageKey = "visualstudio";
-				rp.smallImageText = "Visual Studio";
-				rp.startTimestamp = DiscordRpc.GetTimestamp (DateTime.UtcNow);
-			};
 
-			if(ready) {
-				Trace.TraceInformation ("[DiscordRpc] Clearing Presence.");
-				DiscordRpc.ClearPresence ();
+			rp.largeImageKey = "visualstudio";
+			rp.largeImageText = "Visual Studio";
+			rp.startTimestamp = DiscordRpc.GetTimestamp(DateTime.UtcNow);
 
-				Trace.TraceInformation ("[DiscordRpc] Updating Presence.");
-				DiscordRpc.UpdatePresence (rp);
-				DiscordRpc.RunCallbacks ();
-			}
-			else {
-				Trace.TraceError ("[DiscordRpc] Failed To Connect Discord.");
-			}
+			rp.state = "No File";
+			rp.details = "No Project";
 
-			base.Initialize ();
+			DiscordRpc.UpdatePresence(rp);
+			DiscordRpc.RunCallbacks();
 
 			events.SolutionEvents.Opened += SolutionEvents_Opened;
+			events.WindowEvents.WindowActivated += WindowEvents_WindowActivated;
+
+			base.Initialize();
+			Log.Info("Initialized.");
 		}
 
-		private void SolutionEvents_Opened() {
-			if(Config.Instance.ShowTimestamp) {
-				if(Config.Instance.ToggleTimestampReset)
-					rp.startTimestamp = DiscordRpc.GetTimestamp (DateTime.UtcNow);
-			}
-			else {
-				rp.startTimestamp = -1;
-			}
+		void CheckTimestamp()
+		{
+			Log.Debug("CheckTimestamp(): Show Timestamp? " + (Config.Instance.ShowTimestamp ? "Yes" : "No"));
+			if (Config.Instance.ShowTimestamp)
+			{
+				Log.Debug("CheckTimestamp(): Toggle Timestamp Reset? " + (Config.Instance.ToggleTimestampReset ? "Yes" : "No"));
 
-			if(Config.Instance.ShowProjectName)
-				rp.details = "Working on {0}".Formatted (dte.Solution.FileName);
-
-			DiscordRpc.UpdatePresence (rp);
-			DiscordRpc.RunCallbacks ();
+				if (Config.Instance.ToggleTimestampReset)
+				{
+					var ts = DiscordRpc.GetTimestamp(DateTime.UtcNow);
+					Log.Debug("CheckTimestamp(): Old Timestamp: " + rp.startTimestamp + ", New Timestamp: " + ts);
+					rp.startTimestamp = ts;
+				}
+			}
+			else
+			{
+				rp.startTimestamp = null;
+			}
 		}
 
-		protected override int QueryClose(out bool canClose) {
-			DiscordRpc.Shutdown ();
-			return base.QueryClose (out canClose);
+		void SolutionEvents_Opened()
+		{
+			CheckTimestamp();
+
+			if (Config.Instance.ShowProjectName)
+			{
+				rp.details = string.Format("Working On {0}", Path.GetFileNameWithoutExtension(dte.Solution.FileName));
+			}
+			else
+			{
+				rp.details = null;
+			}
+
+			DiscordRpc.UpdatePresence(rp);
+			DiscordRpc.RunCallbacks();
+		}
+
+		void SolutionEvents_Closed()
+		{
+			CheckTimestamp();
+
+			rp.state = "No File";
+			rp.details = "No Project";
+
+			DiscordRpc.UpdatePresence(rp);
+			DiscordRpc.RunCallbacks();
+		}
+
+		void WindowEvents_WindowActivated(Window GotFocus, Window LostFocus)
+		{
+			CheckTimestamp();
+
+			if (GotFocus != null && GotFocus.Document != null && File.Exists(GotFocus.Document.Path))
+			{
+
+			}
+		}
+
+		protected override int QueryClose(out bool canClose)
+		{
+			Log.Info("Shutdown.");
+			DiscordRpc.Shutdown();
+			return base.QueryClose(out canClose);
 		}
 	}
 }

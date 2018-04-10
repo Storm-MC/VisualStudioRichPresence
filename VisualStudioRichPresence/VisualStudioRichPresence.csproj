@@ -44,6 +44,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -60,6 +61,7 @@
     <Compile Include="Entities\VisualStudioRichPresenceConfig.Load.cs" />
     <Compile Include="Entities\VisualStudioRichPresenceExtension.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -165,6 +167,7 @@
   <ItemGroup>
     <Content Include="discord-rpc.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="Resources\DiscordPackage.ico" />
   </ItemGroup>
