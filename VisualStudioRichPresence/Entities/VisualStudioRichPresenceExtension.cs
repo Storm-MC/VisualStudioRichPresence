@@ -23,10 +23,10 @@ namespace VisualStudioRichPresence.Entities
 
 		public VisualStudioRichPresenceExtension(string ext, string smallKey, string largeKey) : this(ext, smallKey)
 		{
-			LargeImageKey = LargeImageKey;
+			LargeImageKey = largeKey;
 		}
 
-		public VisualStudioRichPresenceExtension(string ext, string smallKey, string smallText, string largeKey, string largeText) : this(ext, smallKey, largeKey)
+		public VisualStudioRichPresenceExtension(string ext, string smallKey, string largeKey, string smallText, string largeText) : this(ext, smallKey, largeKey)
 		{
 			SmallImageText = smallText;
 			LargeImageText = largeText;
