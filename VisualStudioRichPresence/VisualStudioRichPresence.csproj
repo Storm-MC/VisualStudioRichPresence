@@ -59,6 +59,7 @@
     <Compile Include="Entities\VisualStudioRichPresenceConfig.cs" />
     <Compile Include="Entities\VisualStudioRichPresenceConfig.Load.cs" />
     <Compile Include="Entities\VisualStudioRichPresenceExtension.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

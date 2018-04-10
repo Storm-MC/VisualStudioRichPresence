@@ -6,11 +6,13 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using VisualStudioRichPresence.Entities;
+using VisualStudioRichPresence.Extensions;
+using Config = VisualStudioRichPresence.Entities.VisualStudioRichPresenceConfig;
 
 namespace VisualStudioRichPresence
 {
-	[ProvideAutoLoad (UIContextGuids80.EmptySolution)]
-	[ProvideAutoLoad (UIContextGuids80.SolutionExists)]
+	[ProvideAutoLoad (UIContextGuids80.SolutionExists, flags: PackageAutoLoadFlags.BackgroundLoad | PackageAutoLoadFlags.SkipWhenUIContextRulesActive)]
+	[ProvideAutoLoad (UIContextGuids80.EmptySolution, flags: PackageAutoLoadFlags.BackgroundLoad | PackageAutoLoadFlags.SkipWhenUIContextRulesActive)]
 
 	[PackageRegistration (UseManagedResourcesOnly = true)]
 	[InstalledProductRegistration ("#110", "#112", "1.0", IconResourceID = 400)]
@@ -23,10 +25,10 @@ namespace VisualStudioRichPresence
 
 		RichPresence rp;
 		EventHandlers eh;
-		bool ready;
+		bool ready = false;
 
 		public DiscordPackage() {
-			VisualStudioRichPresenceConfig.Load ();
+			Config.Load ();
 
 			rp = new RichPresence ();
 			eh = new EventHandlers () {
@@ -49,7 +51,7 @@ namespace VisualStudioRichPresence
 
 		protected override void Initialize() {
 			DiscordRpc.Initialize (
-				VisualStudioRichPresenceConfig.Instance.ApplicationId.ToString (),
+				Config.Instance.ApplicationId,
 				ref eh,
 				true,
 				null
@@ -64,11 +66,37 @@ namespace VisualStudioRichPresence
 				rp.startTimestamp = DiscordRpc.GetTimestamp (DateTime.UtcNow);
 			};
 
-			DiscordRpc.ClearPresence ();
-			DiscordRpc.UpdatePresence (rp);
-			DiscordRpc.RunCallbacks ();
+			if(ready) {
+				Trace.TraceInformation ("[DiscordRpc] Clearing Presence.");
+				DiscordRpc.ClearPresence ();
+
+				Trace.TraceInformation ("[DiscordRpc] Updating Presence.");
+				DiscordRpc.UpdatePresence (rp);
+				DiscordRpc.RunCallbacks ();
+			}
+			else {
+				Trace.TraceError ("[DiscordRpc] Failed To Connect Discord.");
+			}
 
 			base.Initialize ();
+
+			events.SolutionEvents.Opened += SolutionEvents_Opened;
+		}
+
+		private void SolutionEvents_Opened() {
+			if(Config.Instance.ShowTimestamp) {
+				if(Config.Instance.ToggleTimestampReset)
+					rp.startTimestamp = DiscordRpc.GetTimestamp (DateTime.UtcNow);
+			}
+			else {
+				rp.startTimestamp = -1;
+			}
+
+			if(Config.Instance.ShowProjectName)
+				rp.details = "Working on {0}".Formatted (dte.Solution.FileName);
+
+			DiscordRpc.UpdatePresence (rp);
+			DiscordRpc.RunCallbacks ();
 		}
 
 		protected override int QueryClose(out bool canClose) {

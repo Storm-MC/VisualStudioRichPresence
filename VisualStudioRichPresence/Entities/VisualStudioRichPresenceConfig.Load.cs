@@ -36,8 +36,8 @@ namespace VisualStudioRichPresence.Entities
 
 				var fs = file.OpenWrite ();
 				var obj = new VisualStudioRichPresenceConfig {
-					ApplicationId = 421688819868237824,
-
+					ApplicationId = "421688819868237824",
+					ShowTimestamp = true,
 					ShowFileName = true,
 					ShowProjectName = true,
 					ToggleTimestampReset = false,

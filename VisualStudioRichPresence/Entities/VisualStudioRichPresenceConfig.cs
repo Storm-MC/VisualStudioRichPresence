@@ -9,7 +9,10 @@ namespace VisualStudioRichPresence.Entities
 	public partial class VisualStudioRichPresenceConfig
 	{
 		[XmlElement]
-		public ulong ApplicationId { get; set; }
+		public string ApplicationId { get; set; }
+
+		[XmlElement]
+		public bool ShowTimestamp { get; set; }
 
 		[XmlElement]
 		public bool ToggleTimestampReset { get; set; }
