@@ -8,12 +8,17 @@ namespace VisualStudioRichPresence.Entities
 {
 	public partial class VisualStudioRichPresenceConfig
 	{
-
+		/// <summary>
+		/// Get Instance
+		/// </summary>
 		public static VisualStudioRichPresenceConfig Instance {
 			get;
 			private set;
 		}
-
+		
+		/// <summary>
+		/// Load Configuration or Create Default Configuration
+		/// </summary>
 		public static void Load()
 		{
 			Log.Info("Loading Configuration...");
