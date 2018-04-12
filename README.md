@@ -31,8 +31,8 @@ You can customize all in configuration, see below:<br><br>
   <AutoResetTimestamp>false</AutoResetTimestamp>
   <ShowFileName>true</ShowFileName>
   <ShowProjectName>true</ShowProjectName>
-  <DefaultFile Extension="" LargeImageKey="default_file" SmallImageKey="" /> <!-- Is an extension too like in &lt;Extensions&gt; -->
-  <DefaultFolder Extension="" LargeImageKey="default_folder" SmallImageKey="" />
+  <DefaultFile Extension="" LargeImageKey="default_file" SmallImageKey="" /> <- This is an extension too like in <Extensions>
+  <DefaultFolder Extension="" LargeImageKey="default_folder" SmallImageKey="" /> <- This is an extension too like in <Extensions>
   <Extensions>
     <Extension Extension="asp" LargeImageKey="file_type_asp" SmallImageKey="" SmallImageText="" LargeImageText="" />
     <Extension Extension="aspx" LargeImageKey="file_type_aspx" SmallImageKey="" SmallImageText="" LargeImageText="" />
