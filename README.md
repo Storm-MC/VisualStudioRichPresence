@@ -22,8 +22,7 @@ This project allows you to customize your rich presence according to what you wa
 
 ## Configuration.
 By default configuration is located in `%USERPROFILE%\Documents\My Games\Visual Studio Rich Presence`.<br>
-You can customize all in configuration, see below:<br><br>
-
+You can customize all in configuration, see below:<br>
 ```xml
 <VisualStudioRichPresenceConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ApplicationId>421688819868237824</ApplicationId>
@@ -57,6 +56,37 @@ You can customize all in configuration, see below:<br><br>
     <String Key="VS_EDITING_FILE" Value="Editing: " />
   </Strings>
 </VisualStudioRichPresenceConfig>
+```<br/>
+<b>All default large image key that i have is:</b>
+```txt
+default_file
+default_folder
+file_type_asp
+file_type_aspx
+file_type_bat
+file_type_c
+file_type_cpp
+file_type_cppheader
+file_type_csharp
+file_type_csproj
+file_type_fsharp2
+file_type_html
+file_type_js
+file_type_json_official
+file_type_light_config
+file_type_njsproj
+file_type_php3
+file_type_python
+file_type_sln
+file_type_sql
+file_type_text
+file_type_typescript
+file_type_vb
+file_type_vbhtml
+file_type_vbproj
+file_type_vcxproj
+file_type_xml
+file_type_yaml
 ```
 
 ## Example
