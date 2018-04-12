@@ -56,7 +56,8 @@ You can customize all in configuration, see below:<br>
     <String Key="VS_EDITING_FILE" Value="Editing: " />
   </Strings>
 </VisualStudioRichPresenceConfig>
-```<br/>
+```
+<br/>
 <b>All default large image key that i have is:</b>
 ```txt
 default_file
