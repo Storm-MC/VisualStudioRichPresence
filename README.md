@@ -19,3 +19,9 @@ This project allows you to customize your rich presence according to what you wa
  >Any kind of question or problem use the issues in this repository.
 <br/><br/>
 >REMEMBER: This project is in the initial phase, at the moment it works correctly, however if you want to contribute with the project feel free, as long as it does not compromise the code or the repository.
+
+<img src="https://i.imgur.com/2lZ9E1f.png" alt="Discord Rich Example"></img>
+
+## Support
+
+Join in our official guild <a href="https://discord.gg/N8Nuugb">clicking here</a>.
